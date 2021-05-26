@@ -1,14 +1,19 @@
-import { Injectable } from '@angular/core';
-import { ApolloQueryResult } from '@apollo/client/core';
-import { Apollo, QueryRef } from 'apollo-angular';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { DELETE_POST, GETALLPOSTS, POST_DELETED_SUBSCRIPTION, UPVOTE } from './query';
+import { Injectable } from "@angular/core";
+import { ApolloQueryResult } from "@apollo/client/core";
+import { Apollo, QueryRef } from "apollo-angular";
+import { BehaviorSubject, Observable } from "rxjs";
+import {
+  CREATE_POST,
+  DELETE_POST,
+  GETALLPOSTS,
+  POST_DELETED_SUBSCRIPTION,
+  UPVOTE,
+} from "./query";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class PostsService {
-
   private posts: any[] = [];
   private data;
   private author;
@@ -26,90 +31,120 @@ export class PostsService {
   constructor(private apollo: Apollo) {
     this.query = this.apollo.watchQuery({
       query: GETALLPOSTS,
-      variables: { id: 1 }
+      variables: { id: 1 },
     });
 
     this.subscribeToDeletedPost();
-   }
+  }
 
   upvote(post: any) {
     let existingPosts: any[] = JSON.parse(JSON.stringify(this.posts));
-    this.apollo.mutate({
-      mutation: UPVOTE,
-      variables: {
-        id: post.id
-      }
-    }).subscribe(async result => {
-
-      const updatedPost = result?.data['upvotePost'];
-      existingPosts = existingPosts.filter(post =>  post.id !== updatedPost.id );
-      const newData = JSON.parse(JSON.stringify({ ...post, ...updatedPost }));
-      existingPosts.push({ ...newData });
-      this.setPosts(JSON.parse(JSON.stringify(existingPosts)));
-
-    }, (error) => {
-      console.log('there was an error sending the query', error);
-    });
+    this.apollo
+      .mutate({
+        mutation: UPVOTE,
+        variables: {
+          id: post.id,
+        },
+      })
+      .subscribe(
+        async (result) => {
+          const updatedPost = result?.data["upvotePost"];
+          existingPosts = existingPosts.filter(
+            (post) => post.id !== updatedPost.id
+          );
+          const newData = JSON.parse(
+            JSON.stringify({ ...post, ...updatedPost })
+          );
+          existingPosts.push({ ...newData });
+          this.setPosts(JSON.parse(JSON.stringify(existingPosts)));
+        },
+        (error) => {
+          console.log("there was an error sending the query", error);
+        }
+      );
   }
 
   getAllPosts(userId: number) {
     this.query = this.apollo.watchQuery({
       query: GETALLPOSTS,
-      variables: { id: 1 }
+      variables: { id: 1 },
     });
-    this.query.valueChanges.subscribe(result => {
+    this.query.valueChanges.subscribe((result) => {
       this.data = result?.data?.author;
       this.setUser();
       this.setPosts(this.data.posts);
     });
   }
 
+  async createPost(title: String, authorId: number) {
+    console.log(`title ${title} authorId ${authorId}`);
 
-  deletePost(post): void{
+    this.apollo
+      .mutate({
+        mutation: CREATE_POST,
+        variables: {
+          title,
+          authorId,
+        },
+      })
+      .subscribe(async (result) => {
+        console.log(`data is ${JSON.stringify(result)}`);
+        const post = result?.data["createPost"];
 
+        const existingPosts = JSON.parse(JSON.stringify(this.posts));
+
+        console.log(`post ${JSON.stringify(post)}`);
+
+        existingPosts.push({ ...post });
+        this.setPosts(JSON.parse(JSON.stringify(existingPosts)));
+      });
+  }
+  deletePost(post): void {
     let existingPosts: any[] = JSON.parse(JSON.stringify(this.posts));
-    this.apollo.mutate({
-      mutation: DELETE_POST,
-      variables: {
-        id: post.id
-      }
-    }).subscribe(async result => {
+    this.apollo
+      .mutate({
+        mutation: DELETE_POST,
+        variables: {
+          id: post.id,
+        },
+      })
+      .subscribe(
+        async (result) => {
+          const deletePost = result?.data["deletePost"];
+          existingPosts = existingPosts.filter((post) => {
+            return post.id !== deletePost.id;
+          });
+          const newData = JSON.parse(
+            JSON.stringify({ ...post, ...deletePost })
+          );
 
-      const deletePost = result?.data['deletePost'];
-      existingPosts = existingPosts.filter(post =>  {
-        return post.id !== deletePost.id;
-      } );
-      const newData = JSON.parse(JSON.stringify({ ...post, ...deletePost }));
-
-      this.setPosts(JSON.parse(JSON.stringify(existingPosts)));
-
-    }, (error) => {
-      console.log('there was an error sending the query', error);
-    });
-
-
+          this.setPosts(JSON.parse(JSON.stringify(existingPosts)));
+        },
+        (error) => {
+          console.log("there was an error sending the query", error);
+        }
+      );
   }
 
   subscribeToDeletedPost() {
     this.query.subscribeToMore({
       document: POST_DELETED_SUBSCRIPTION,
-      variables: { id: 1 }
-      ,
+      variables: { id: 1 },
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) {
           return prev;
         }
 
         console.log(`prev ${JSON.stringify(prev)}`);
-        console.log((`subscriptionData ${JSON.stringify(subscriptionData)}`));
+        console.log(`subscriptionData ${JSON.stringify(subscriptionData)}`);
 
         let existingPosts: any[] = JSON.parse(JSON.stringify(this.posts));
         const deletePost = subscriptionData.data.postDeleted;
 
         // const deletePost = result?.data['deletePost'];
-        existingPosts = existingPosts.filter(post =>  {
-        return post.id !== deletePost.id;
-      } );
+        existingPosts = existingPosts.filter((post) => {
+          return post.id !== deletePost.id;
+        });
 
         this.setPosts(JSON.parse(JSON.stringify(existingPosts)));
 
@@ -119,7 +154,7 @@ export class PostsService {
         //     posts: [newFeedItem, ...prev?.entry?.posts]
         //   }
         // };
-      }
+      },
     });
   }
   private setPosts(posts): void {
@@ -129,19 +164,17 @@ export class PostsService {
 
   private setUser(): void {
     let keys = Object.keys(this.data);
-    keys = keys.filter(value => value !== 'posts');
+    keys = keys.filter((value) => value !== "posts");
     const user: any = {};
-    keys.forEach(val => {
+    keys.forEach((val) => {
       user[val] = this.data[val];
     });
 
-    user.Name = user.firstName + ' ' + user.lastName;
+    user.Name = user.firstName + " " + user.lastName;
     delete user.firstName;
     delete user.lastName;
 
     this.author = [{ ...user }];
     this.authorSub.next(this.author);
   }
-
-
 }

@@ -1,0 +1,16 @@
+<form [formGroup]="form">
+  <mat-form-field appearance="outline">
+    <mat-label>Enter Title</mat-label>
+    <input matInput [formControl]="title" required />
+    <mat-error *ngIf="title.hasError('required')">Please enter title</mat-error>
+  </mat-form-field>
+  <button
+    mat-raised-button
+    color="primary"
+    [disabled]="title.hasError('required')"
+    (click)="submit()"
+    mat-dialog-close
+  >
+    Submit
+  </button>
+</form>

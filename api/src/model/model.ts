@@ -36,6 +36,8 @@ export abstract class IMutation {
     abstract upvotePost(postId: number): Post | Promise<Post>;
 
     abstract deletePost(postId: number): Post | Promise<Post>;
+
+    abstract createPost(title: string, authorId: number): Post | Promise<Post>;
 }
 
 export abstract class ISubscription {

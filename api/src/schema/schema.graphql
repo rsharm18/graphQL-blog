@@ -2,7 +2,7 @@ type Author {
   id: Int!
   firstName: String
   lastName: String
-  email:String!
+  email: String!
   posts: [Post]
 }
 
@@ -11,10 +11,8 @@ type Post {
   title: String!
   votes: Int
 
-  authorId:Int!
+  authorId: Int!
 }
-
-
 
 type Query {
   author(id: Int!): Author
@@ -28,7 +26,9 @@ type Mutation {
   deletePost(postId: Int!): Post
 }
 
-
+type Mutation {
+  createPost(title: String!, authorId: Int!): Post
+}
 
 type Subscription {
   postDeleted: Post
