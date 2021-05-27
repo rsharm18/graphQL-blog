@@ -17,6 +17,15 @@ export const GETALLPOSTS = gql`
   }
 `;
 
+export const CREATE_POST = gql`
+  mutation createPost($title: String!, $authorId: Int!) {
+    createPost(title: $title, authorId: $authorId) {
+      title
+      id
+    }
+  }
+`;
+
 export const UPVOTE = gql`
   mutation castVote($id: Int!) {
     upvotePost(postId: $id) {
@@ -50,11 +59,4 @@ export const POST_DELETED_SUBSCRIPTION = gql`
   }
 `;
 
-export const CREATE_POST = gql`
-  mutation createPost($title: String!, $authorId: Int!) {
-    createPost(title: $title, authorId: $authorId) {
-      title
-      id
-    }
-  }
-`;
+
