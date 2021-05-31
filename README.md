@@ -5,7 +5,7 @@ blog
 from the roor folder navigate to api folder (cd api) and run
 ```sh
 - npm i
-- ng serve
+- npm run serve
 ```
 
 # Launch the app
