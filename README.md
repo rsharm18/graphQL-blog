@@ -1,5 +1,10 @@
 # graphQL-blog
-blog 
+# Pre-Requisites
+### The below apps must be installed in your system before you try to run the app
+1. NodeJS
+2. Angular
+3. NestJS
+4. Typescript
 
 ## Start the service
 from the roor folder navigate to api folder (cd api) and run
